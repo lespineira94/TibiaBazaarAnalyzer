@@ -36,15 +36,13 @@ public class ScrapperImpl implements Scrapper {
     private WebClient webClient;
 
     @Override
-    public String doScrap() throws IOException, ParseException {
-        final String result = "";
-
+    public List<CharacterAuctionDataBean> doScrap() throws IOException, ParseException {
         final List<CharacterAuctionDataBean> characterBeanList = this.parseData();
 
         LOGGER.info("Characters parsed: {}", characterBeanList);
         LOGGER.info("Number of characters obtained: {}", characterBeanList.size());
 
-        return result;
+        return characterBeanList;
     }
 
     private List<CharacterAuctionDataBean> parseData() throws IOException, ParseException {
