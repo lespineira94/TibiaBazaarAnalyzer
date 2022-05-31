@@ -14,7 +14,6 @@ public class HTMLUnitConfiguration {
         final WebClient webClient = new WebClient();
 
         //TODO implement silent listener
-        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         webClient.getOptions().setThrowExceptionOnScriptError(false);
         webClient.getOptions().setJavaScriptEnabled(true);
         webClient.setJavaScriptTimeout(TIMEOUT);

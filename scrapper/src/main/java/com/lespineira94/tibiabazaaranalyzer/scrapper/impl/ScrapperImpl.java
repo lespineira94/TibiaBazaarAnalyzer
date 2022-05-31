@@ -1,5 +1,6 @@
 package com.lespineira94.tibiabazaaranalyzer.scrapper.impl;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -31,6 +32,7 @@ public class ScrapperImpl implements Scrapper {
 
     private static final String CURRENT_AUCTIONS_BASE_URL = "https://www.tibia.com/charactertrade/?subtopic=currentcharactertrades&currentpage=";
     private static final Integer NUMBER_OF_CHARACTERS_PER_PAGE = 25;
+    private static final Integer RETRIES = 3;
 
     @Autowired
     private WebClient webClient;
@@ -48,22 +50,65 @@ public class ScrapperImpl implements Scrapper {
     private List<CharacterAuctionDataBean> parseData() throws IOException, ParseException {
         final List<CharacterBean> characterBeanList = new ArrayList<>();
         final List<AuctionDataBean> auctionDataBeanList = new ArrayList<>();
+        final List<String> pageUrlErrors = new ArrayList<>();
 
         // Gets the total of characters for sale and then calculates the number of pages to parse by partitioning by the number of characters per page(by default 25)
         final List<Integer> numberOfPages = this.getNumberOfPages();
 
         for (final Integer pageNumber : numberOfPages) {
             final String currentPageUrl = CURRENT_AUCTIONS_BASE_URL.concat(String.valueOf(pageNumber));
-            final HtmlPage htmlPage = this.webClient.getPage(currentPageUrl);
 
-            final List<CharacterBean> characterBeanListPerPage = this.parseCharacterData(htmlPage);
-            characterBeanList.addAll(characterBeanListPerPage);
-
-            final List<AuctionDataBean> auctionDataBeanPerPage = this.parseAuctionData(htmlPage);
-            auctionDataBeanList.addAll(auctionDataBeanPerPage);
+            try {
+                this.parseHtmlPage(characterBeanList, auctionDataBeanList, currentPageUrl);
+            } catch (final FailingHttpStatusCodeException e) {
+                pageUrlErrors.add(currentPageUrl);
+            }
         }
 
+        // If there was any error, it will try to parse the error pages
+        this.checkIfRetryToParseData(characterBeanList, auctionDataBeanList, pageUrlErrors);
+
         return this.mergeCharacterAndAuctionData(characterBeanList, auctionDataBeanList);
+    }
+
+    private void checkIfRetryToParseData(final List<CharacterBean> characterBeanList, final List<AuctionDataBean> auctionDataBeanList, final List<String> pageUrlErrors) throws IOException, ParseException {
+        //TODO
+     /*   final boolean doRetryParseData = !CollectionUtils.isEmpty(pageUrlErrors);
+
+        if (doRetryParseData) {
+            final AtomicInteger currentRetry = new AtomicInteger(1);
+            final List<String> pagesReparsedOK = new ArrayList<>();
+
+            while (currentRetry.get() <= RETRIES || (currentRetry.get() < RETRIES && CollectionUtils.isEmpty(pageUrlErrors))) {
+                final AtomicInteger errors = new AtomicInteger(0);
+                pageUrlErrors.forEach(pageUrl -> {
+                    try {
+                        this.parseHtmlPage(characterBeanList, auctionDataBeanList, pageUrl);
+                        pagesReparsedOK.add(pageUrl);
+                    } catch (final Exception e) {
+                        errors.getAndIncrement();
+
+                        final boolean doIncrementRetries = pageUrlErrors.size() == (pagesReparsedOK.size() + errors.get());
+                        if (doIncrementRetries) {
+                            currentRetry.getAndIncrement();
+                        }
+                    }
+                });
+
+                // Checks the parsed pages that now were ok, and removes from the list to break the loop
+                pageUrlErrors.removeAll(pagesReparsedOK);
+            }
+        }*/
+    }
+
+    private void parseHtmlPage(final List<CharacterBean> characterBeanList, final List<AuctionDataBean> auctionDataBeanList, final String currentPageUrl) throws IOException, ParseException {
+        final HtmlPage htmlPage = this.webClient.getPage(currentPageUrl);
+
+        final List<CharacterBean> characterBeanListPerPage = this.parseCharacterData(htmlPage);
+        characterBeanList.addAll(characterBeanListPerPage);
+
+        final List<AuctionDataBean> auctionDataBeanPerPage = this.parseAuctionData(htmlPage);
+        auctionDataBeanList.addAll(auctionDataBeanPerPage);
     }
 
     private List<CharacterAuctionDataBean> mergeCharacterAndAuctionData(final List<CharacterBean> characterBeanList, final List<AuctionDataBean> auctionDataBeanList) {

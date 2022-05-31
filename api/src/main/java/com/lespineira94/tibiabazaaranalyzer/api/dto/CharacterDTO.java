@@ -2,12 +2,14 @@ package com.lespineira94.tibiabazaaranalyzer.api.dto;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Data
 @Builder
 @ToString
-public class CharacterDTO {
+public class CharacterDTO implements Serializable {
 
     private String name;
     private Integer level;

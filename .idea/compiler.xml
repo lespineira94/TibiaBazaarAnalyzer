@@ -20,4 +20,13 @@
       </profile>
     </annotationProcessing>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="TibiaBazaarAnalyzer" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="api" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="boot" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="ms" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="scrapper" options="-Amapstruct.defaultComponentModel=spring" />
+    </option>
+  </component>
 </project>
