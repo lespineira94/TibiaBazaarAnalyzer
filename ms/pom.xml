@@ -9,32 +9,31 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>boot</artifactId>
+    <artifactId>ms</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
-
     <dependencies>
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.lespineira94</groupId>
-            <artifactId>ms</artifactId>
+            <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <!--SPRINGBOOT STARTER-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-            <version>${htmlunit.version}</version>
+            <groupId>com.lespineira94</groupId>
+            <artifactId>scrapper</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
+
 </project>

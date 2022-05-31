@@ -4,7 +4,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ComponentScan("com.lespineira94.tibiabazaaranalyzer.api.controllers")
+@ComponentScan({"com.lespineira94.tibiabazaaranalyzer.ms.controllers", "com.lespineira94.tibiabazaaranalyzer.scrapper"})
 public class AppConfiguration {
 
 

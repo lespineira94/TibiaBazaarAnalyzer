@@ -12,7 +12,8 @@
     <properties>
         <spring-boot.version>2.7.0</spring-boot.version>
         <htmlunit.version>2.61.0</htmlunit.version>
-
+        <lombok.version>1.18.24</lombok.version>
+        <log4j.version>2.7</log4j.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
@@ -32,6 +33,29 @@
                 <artifactId>htmlunit</artifactId>
                 <version>${htmlunit.version}</version>
             </dependency>
+            <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+
+            <!--LOG4J -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
 
             <!-- SCOPE TEST -->
             <dependency>
@@ -48,6 +72,7 @@
         <module>boot</module>
         <module>api</module>
         <module>scrapper</module>
+        <module>ms</module>
     </modules>
 
 </project>
