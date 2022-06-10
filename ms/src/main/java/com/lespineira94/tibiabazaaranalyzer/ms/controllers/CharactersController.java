@@ -1,6 +1,7 @@
 package com.lespineira94.tibiabazaaranalyzer.ms.controllers;
 
 import com.lespineira94.tibiabazaaranalyzer.api.dto.CharacterAuctionDataWrapperDTO;
+import com.lespineira94.tibiabazaaranalyzer.api.services.MailService;
 import com.lespineira94.tibiabazaaranalyzer.api.services.ScrapperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +17,17 @@ public class CharactersController {
     @Autowired
     private ScrapperService scrapperService;
 
+    @Autowired
+    private MailService mailService;
+
     @GetMapping("/characters")
     ResponseEntity<CharacterAuctionDataWrapperDTO> getAllCharactersData() {
         CharacterAuctionDataWrapperDTO data = new CharacterAuctionDataWrapperDTO();
 
         try {
             data = this.scrapperService.getCharacterAuctionDataList();
+
+            this.mailService.sendMail(data);
         } catch (final IOException | ParseException e) {
             e.printStackTrace();
         }

@@ -3,6 +3,7 @@ package com.lespineira94.tibiabazaaranalyzer.api.dto;
 import lombok.*;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -10,7 +11,7 @@ import java.io.Serializable;
 @Builder
 public class AuctionDataDTO implements Serializable {
 
-    private String startDate;
-    private String endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private Integer minimumBid;
 }

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: tibia-bazaar-analyzer
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    email: tibiabazaaranalyzer@gmail.com
+    ## DO NOT COMMIT
+    password: tuioljshxplkebfa
+    transport:
+      protocol: smtp
+    smtp:
+      auth: true
+      starttls:
+        enable: true
+    debug: true
+
+app:
+  mail:
+    enabled: true
+    minutesLimitToSendMail: 40
+    maxLevel: 400
+    minLevel: 230
+    maxTibiaCoins: 1000

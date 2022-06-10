@@ -70,6 +70,13 @@
                 <version>${mapstruct.version}</version>
             </dependency>
 
+            <!-- Mail -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-mail</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+
             <!-- SCOPE TEST -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>

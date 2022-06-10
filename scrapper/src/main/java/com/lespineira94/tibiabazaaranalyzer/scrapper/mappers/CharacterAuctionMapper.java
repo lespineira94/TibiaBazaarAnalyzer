@@ -2,9 +2,11 @@ package com.lespineira94.tibiabazaaranalyzer.scrapper.mappers;
 
 import com.lespineira94.tibiabazaaranalyzer.api.dto.AuctionDataDTO;
 import com.lespineira94.tibiabazaaranalyzer.api.dto.CharacterAuctionDataDTO;
+import com.lespineira94.tibiabazaaranalyzer.api.dto.CharacterAuctionDataWrapperDTO;
 import com.lespineira94.tibiabazaaranalyzer.api.dto.CharacterDTO;
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.AuctionDataBean;
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.CharacterAuctionDataBean;
+import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.CharacterAuctionDataWrapperBean;
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.CharacterBean;
 import org.mapstruct.Mapper;
 
@@ -36,5 +38,9 @@ public interface CharacterAuctionMapper {
     List<CharacterAuctionDataBean> toCharacterAuctionDataBeanList(List<CharacterAuctionDataDTO> dto);
 
     List<CharacterAuctionDataDTO> toCharacterAuctionDataDTOList(List<CharacterAuctionDataBean> bean);
+
+    CharacterAuctionDataWrapperDTO toCharacterAuctionDataWrapperDTO(CharacterAuctionDataWrapperBean bean);
+
+    CharacterAuctionDataWrapperBean toCharacterAuctionDataWrapperBean(CharacterAuctionDataWrapperDTO dto);
 
 }

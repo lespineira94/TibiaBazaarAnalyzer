@@ -11,7 +11,6 @@ import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.AuctionDataB
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.CharacterAuctionDataBean;
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.CharacterBean;
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.parser.AuctionHeaderInfoBean;
-import com.sun.jdi.InternalException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +19,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 public class ScrapperImpl implements Scrapper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScrapperImpl.class.getName());
-
+    private static final String NO_BREAK_SPACE = "[\\s\u00A0]+";
     private static final String CURRENT_AUCTIONS_BASE_URL = "https://www.tibia.com/charactertrade/?subtopic=currentcharactertrades&currentpage=";
     private static final Integer NUMBER_OF_CHARACTERS_PER_PAGE = 25;
     private static final Integer RETRIES = 3;
@@ -53,7 +53,8 @@ public class ScrapperImpl implements Scrapper {
         final List<String> pageUrlErrors = new ArrayList<>();
 
         // Gets the total of characters for sale and then calculates the number of pages to parse by partitioning by the number of characters per page(by default 25)
-        final List<Integer> numberOfPages = this.getNumberOfPages();
+        //TODO eliminar
+        final List<Integer> numberOfPages = Arrays.asList(1, 2, 3, 4, 5);
 
         for (final Integer pageNumber : numberOfPages) {
             final String currentPageUrl = CURRENT_AUCTIONS_BASE_URL.concat(String.valueOf(pageNumber));
@@ -101,7 +102,7 @@ public class ScrapperImpl implements Scrapper {
         }*/
     }
 
-    private void parseHtmlPage(final List<CharacterBean> characterBeanList, final List<AuctionDataBean> auctionDataBeanList, final String currentPageUrl) throws IOException, ParseException {
+    private void parseHtmlPage(final List<CharacterBean> characterBeanList, final List<AuctionDataBean> auctionDataBeanList, final String currentPageUrl) throws IOException {
         final HtmlPage htmlPage = this.webClient.getPage(currentPageUrl);
 
         final List<CharacterBean> characterBeanListPerPage = this.parseCharacterData(htmlPage);
@@ -125,22 +126,24 @@ public class ScrapperImpl implements Scrapper {
         return characterAuctionDataBeanList;
     }
 
-    private List<AuctionDataBean> parseAuctionData(final HtmlPage htmlPage) throws ParseException {
+    private List<AuctionDataBean> parseAuctionData(final HtmlPage htmlPage) {
         final List<AuctionDataBean> auctionDataBeanList = new ArrayList<>();
-
         final List<DomText> auctionDatesElements = htmlPage.getByXPath("//div[contains(@class, 'ShortAuctionDataValue')]/text()");
         final List<String> auctionDatesList = auctionDatesElements.stream().map(DomNode::getTextContent).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
-        this.validateAuctionTimersList(auctionDatesList);
+
+        final List<LocalDateTime> datesList = this.getAuctionDates(auctionDatesList);
+
+        this.validateAuctionTimersList(datesList);
 
         // Loop for every 2 elements so i can get start date and end date in pairs. Start date is the i and end date i+1
-        for (int i = 0; i < auctionDatesList.size(); i += 2) {
+        for (int i = 0; i < datesList.size(); i += 2) {
             final AuctionDataBean auctionDataBean = AuctionDataBean.builder().build();
 
             // Parse start date
-            final String startDate = auctionDatesList.get(i);
+            final LocalDateTime startDate = datesList.get(i);
             auctionDataBean.setStartDate(startDate);
             // Parse end date
-            final String endDate = auctionDatesList.get(i + 1);
+            final LocalDateTime endDate = datesList.get(i + 1);
             auctionDataBean.setEndDate(endDate);
 
             auctionDataBeanList.add(auctionDataBean);
@@ -157,6 +160,32 @@ public class ScrapperImpl implements Scrapper {
         }
 
         return auctionDataBeanList;
+    }
+
+    private List<LocalDateTime> getAuctionDates(final List<String> auctionDatesList) {
+        return auctionDatesList.stream().map(auctiondatesString -> {
+            final String splittedByCommas = auctiondatesString.replaceAll(NO_BREAK_SPACE, ";").replace(",", "");
+
+            final String[] datesSplitted = splittedByCommas.split(";");
+            try {
+                final String monthString = datesSplitted[0];
+                final Date date = new SimpleDateFormat("MMM", Locale.ENGLISH).parse(monthString);
+
+                final int day = Integer.parseInt(datesSplitted[1]);
+                final int year = Integer.parseInt(datesSplitted[2]);
+                final int month = date.getMonth() + 1;
+
+                final String time = datesSplitted[3];
+                final String[] timeSplitted = time.split(":");
+                final int hour = Integer.parseInt(timeSplitted[0]);
+                final int minutes = Integer.parseInt(timeSplitted[1]);
+
+                return LocalDateTime.of(year, month, day, hour, minutes);
+
+            } catch (final ParseException e) {
+                throw new InternalError("Error parsing dates", e);
+            }
+        }).collect(Collectors.toList());
     }
 
     private List<String> getBids(final HtmlPage htmlPage, final List<AuctionDataBean> auctionDataBeanList) {
@@ -178,14 +207,14 @@ public class ScrapperImpl implements Scrapper {
 
         final boolean areListsValids = minimumBids.size() == auctionDataBeanList.size();
         if (!areListsValids) {
-            throw new InternalException("AcutionDataLists are invalid");
+            throw new InternalError("AcutionDataLists are invalid");
         }
     }
 
-    private void validateAuctionTimersList(final List<String> auctionTimers) {
+    private void validateAuctionTimersList(final List<LocalDateTime> auctionTimers) {
         //TODO out to another class validations
         if (auctionTimers.size() % 2 != 0) {
-            throw new InternalException("The auction data should be divisible by 2");
+            throw new InternalError("The auction data should be divisible by 2");
         }
     }
 
