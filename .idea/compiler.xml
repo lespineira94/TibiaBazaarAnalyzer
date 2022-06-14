@@ -14,6 +14,7 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.4.2.Final/mapstruct-1.4.2.Final.jar" />
         </processorPath>
         <module name="scrapper" />
+        <module name="sch" />
         <module name="api" />
         <module name="boot" />
         <module name="ms" />
@@ -26,6 +27,7 @@
       <module name="api" options="-Amapstruct.defaultComponentModel=spring" />
       <module name="boot" options="-Amapstruct.defaultComponentModel=spring" />
       <module name="ms" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="sch" options="-Amapstruct.defaultComponentModel=spring" />
       <module name="scrapper" options="-Amapstruct.defaultComponentModel=spring" />
     </option>
   </component>

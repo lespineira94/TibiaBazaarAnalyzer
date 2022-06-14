@@ -131,6 +131,7 @@
         <module>api</module>
         <module>scrapper</module>
         <module>ms</module>
+        <module>sch</module>
     </modules>
 
 </project>

@@ -19,6 +19,10 @@ app:
   mail:
     enabled: true
     minutesLimitToSendMail: 40
-    maxLevel: 400
-    minLevel: 230
+    maxLevel: 600
+    minLevel: 210
     maxTibiaCoins: 1000
+
+  scheduler:
+    tibiabazaar:
+      cronExpresion: 0 0/20 * * * ?
