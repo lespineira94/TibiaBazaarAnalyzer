@@ -17,5 +17,6 @@ public class CharacterDTO implements Serializable {
     private String gender;
     private String world;
     private String imgUrl;
+    private String characterInfoUrl;
 
 }

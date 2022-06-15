@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.mail.internet.MimeMessage;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +50,8 @@ public class MailServiceImpl implements MailService {
     @Value("${spring.mail.email}")
     private String emailFrom;
 
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     @Override
     @Async
     public void sendMail(final CharacterAuctionDataWrapperDTO characterAuctionDataWrapperDTO) {
@@ -68,11 +72,12 @@ public class MailServiceImpl implements MailService {
     private void createMailAndSend(final CharacterAuctionDataWrapperDTO characterAuctionDataWrapperDTO) {
         try {
             final List<CharacterAuctionDataDTO> listSorted = characterAuctionDataWrapperDTO.getCharactersAuctionData().stream().sorted(Comparator.comparing(characterAuctiondata -> characterAuctiondata.getAuctionData().getEndDate())).collect(Collectors.toList());
+            final String subjectDate = LocalDateTime.now().format(this.formatter);
             final MimeMessage message = this.javaMailSender.createMimeMessage();
             final MimeMessageHelper helper = new MimeMessageHelper(message, true);
             message.setFrom(this.emailFrom);
             helper.setTo("luesve94@gmail.com");
-            message.setSubject("test");
+            message.setSubject("Tibia Bazaar info at: " + subjectDate);
 
             final StringBuilder sb = new StringBuilder();
             sb.append("<html>");
@@ -82,11 +87,11 @@ public class MailServiceImpl implements MailService {
                 final CharacterDTO character = characterAuctionDataDTO.getCharacter();
                 final AuctionDataDTO auctionData = characterAuctionDataDTO.getAuctionData();
 
-                sb.append("<h3 style ='margin: 0px; color:blue'>" + character.getName() + "</h3>");
+                sb.append("<a href='" + character.getCharacterInfoUrl() + "'> <h3 style ='margin: 0px; color:blue'>" + character.getName() + "</h3></a>");
                 sb.append("<p style ='margin: 2px; margin-top:0px'><img src='" + character.getImgUrl() + "' </p>");
                 sb.append("<p style ='margin: 2px; color:black; font-weight: bold'>" + character.getLevel() + " " + character.getVocation() + "</p>");
                 sb.append("<p style ='margin: 2px; color:black'>" + auctionData.getMinimumBid() + "<img src='https://static.tibia.com/images//account/icon-tibiacointrusted.png' /> </p>");
-                sb.append("<p style ='margin: 2px; color:black'> Auction end: " + auctionData.getEndDate() + "</p>");
+                sb.append("<p style ='margin: 2px; color:black'> Auction end: " + auctionData.getEndDate().format(this.formatter) + "</p>");
                 sb.append("<br>");
 
             });

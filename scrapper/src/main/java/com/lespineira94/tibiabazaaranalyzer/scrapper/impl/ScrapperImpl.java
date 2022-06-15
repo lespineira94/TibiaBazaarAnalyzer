@@ -2,7 +2,6 @@ package com.lespineira94.tibiabazaaranalyzer.scrapper.impl;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -11,6 +10,7 @@ import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.AuctionDataB
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.CharacterAuctionDataBean;
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.auctions.CharacterBean;
 import com.lespineira94.tibiabazaaranalyzer.scrapper.beans.parser.AuctionHeaderInfoBean;
+import com.lespineira94.tibiabazaaranalyzer.scrapper.util.ScrapperUtil;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,37 +222,30 @@ public class ScrapperImpl implements Scrapper {
         final List<CharacterBean> characterBeanList = new ArrayList<>();
 
         // Character names
-        final List<String> characterNames = this.getCharacterNames(htmlPage);
+        final List<String> characterNames = ScrapperUtil.getCharacterInfoStringListByXPathExpression(htmlPage, "//div[contains(@class, 'AuctionCharacterName')]/a/text()");
+        // Character info url
+        final List<String> charactersInfoUrls = ScrapperUtil.getCharacterInfoStringListByXPathExpression(htmlPage, "//div[contains(@class, 'AuctionCharacterName')]/a/@href");
         // Info about levels, vocations and genders
         final AuctionHeaderInfoBean auctionHeaderInfo = this.getAuctionHeaderInfo(htmlPage);
         // Worlds
-        final List<String> worlds = this.getWorlds(htmlPage);
+        final List<String> worlds = ScrapperUtil.getCharacterInfoStringListByXPathExpression(htmlPage, "//div[contains(@class, 'AuctionHeader')]/a/text()");
         // Character images
-        final List<String> imageUrls = this.getImageUrls(htmlPage);
+        final List<String> imageUrls = ScrapperUtil.getCharacterInfoStringListByXPathExpression(htmlPage, "//img[contains(@class, 'AuctionOutfitImage')]/@src");
 
         // Validates all the lists and adds all the data to the return list
-        this.validateAndAddCharacterDataToList(characterBeanList, characterNames, auctionHeaderInfo, worlds, imageUrls);
+        this.validateAndAddCharacterDataToList(characterBeanList, characterNames, auctionHeaderInfo, worlds, imageUrls, charactersInfoUrls);
 
         return characterBeanList;
     }
 
-    private List<String> getImageUrls(final HtmlPage htmlPage) {
-        final List<String> imageUrls = new ArrayList<>();
-
-        final List<DomAttr> imageUrlsElements = htmlPage.getByXPath("//img[contains(@class, 'AuctionOutfitImage')]/@src");
-        imageUrlsElements.forEach(urlElement -> imageUrls.add(urlElement.getTextContent()));
-
-        return imageUrls;
-    }
-
-    private void validateAndAddCharacterDataToList(final List<CharacterBean> characterBeanList, final List<String> characterNames, final AuctionHeaderInfoBean auctionHeaderInfo, final List<String> worlds, final List<String> imageUrls) {
+    private void validateAndAddCharacterDataToList(final List<CharacterBean> characterBeanList, final List<String> characterNames, final AuctionHeaderInfoBean auctionHeaderInfo, final List<String> worlds, final List<String> imageUrls, final List<String> charactersInfoUrls) {
         //Validates that in all the character data lists are the same number of elements, so i know that im not missing any data
-        this.validateLists(characterNames, auctionHeaderInfo, worlds, imageUrls);
+        this.validateLists(characterNames, auctionHeaderInfo, worlds, imageUrls, charactersInfoUrls);
 
-        this.addDataToList(characterBeanList, characterNames, auctionHeaderInfo, worlds, imageUrls);
+        this.addDataToList(characterBeanList, characterNames, auctionHeaderInfo, worlds, imageUrls, charactersInfoUrls);
     }
 
-    private void addDataToList(final List<CharacterBean> characterBeanList, final List<String> characterNames, final AuctionHeaderInfoBean auctionHeaderInfo, final List<String> worlds, final List<String> imageUrls) {
+    private void addDataToList(final List<CharacterBean> characterBeanList, final List<String> characterNames, final AuctionHeaderInfoBean auctionHeaderInfo, final List<String> worlds, final List<String> imageUrls, final List<String> charactersInfoUrls) {
         for (int i = 0; i < characterNames.size(); i++) {
             final String name = characterNames.get(i);
             final Integer level = auctionHeaderInfo.getLevels().get(i);
@@ -260,6 +253,7 @@ public class ScrapperImpl implements Scrapper {
             final String gender = auctionHeaderInfo.getGenders().get(i);
             final String world = worlds.get(i);
             final String imageUrl = imageUrls.get(i);
+            final String characterInfoUrl = charactersInfoUrls.get(i);
 
             final CharacterBean characterBean = CharacterBean.builder()
                     .name(name)
@@ -268,12 +262,13 @@ public class ScrapperImpl implements Scrapper {
                     .gender(gender)
                     .world(world)
                     .imgUrl(imageUrl)
+                    .characterInfoUrl(characterInfoUrl)
                     .build();
             characterBeanList.add(characterBean);
         }
     }
 
-    private void validateLists(final List<String> characterNames, final AuctionHeaderInfoBean auctionHeaderInfo, final List<String> worlds, final List<String> imageUrls) {
+    private void validateLists(final List<String> characterNames, final AuctionHeaderInfoBean auctionHeaderInfo, final List<String> worlds, final List<String> imageUrls, final List<String> charactersInfoUrls) {
         final List<Integer> levels = auctionHeaderInfo.getLevels();
         final List<String> vocations = auctionHeaderInfo.getVocations();
         final List<String> genders = auctionHeaderInfo.getGenders();
@@ -284,6 +279,7 @@ public class ScrapperImpl implements Scrapper {
         Validate.notEmpty(genders);
         Validate.notEmpty(worlds);
         Validate.notEmpty(imageUrls);
+        Validate.notEmpty(charactersInfoUrls);
 
         Validate.noNullElements(characterNames);
         Validate.noNullElements(levels);
@@ -291,23 +287,15 @@ public class ScrapperImpl implements Scrapper {
         Validate.noNullElements(genders);
         Validate.noNullElements(worlds);
         Validate.noNullElements(imageUrls);
+        Validate.noNullElements(charactersInfoUrls);
 
         final int size = characterNames.size();
 
-        final boolean areListsSameSize = levels.size() == size && vocations.size() == size && genders.size() == size && worlds.size() == size && imageUrls.size() == size;
+        final boolean areListsSameSize = levels.size() == size && vocations.size() == size && genders.size() == size && worlds.size() == size && imageUrls.size() == size && charactersInfoUrls.size() == size;
         if (!areListsSameSize) {
             throw new IllegalArgumentException("The validated lists have not the same size");
         }
 
-    }
-
-    private List<String> getWorlds(final HtmlPage htmlPage) {
-        final List<String> worlds = new ArrayList<>();
-
-        final List<DomText> worldElements = htmlPage.getByXPath("//div[contains(@class, 'AuctionHeader')]/a/text()");
-        worldElements.forEach(world -> worlds.add(world.getTextContent()));
-
-        return worlds;
     }
 
     private AuctionHeaderInfoBean getAuctionHeaderInfo(final HtmlPage htmlPage) {
@@ -336,16 +324,6 @@ public class ScrapperImpl implements Scrapper {
         }
 
         return auctionHeaderInfo;
-    }
-
-
-    private List<String> getCharacterNames(final HtmlPage htmlPage) {
-        final List<String> characterNames = new ArrayList<>();
-
-        final List<DomText> auctionCharacterNamesElements = htmlPage.getByXPath("//div[contains(@class, 'AuctionCharacterName')]/a/text()");
-        auctionCharacterNamesElements.forEach(auctionCharacterNameElement -> characterNames.add(auctionCharacterNameElement.getTextContent()));
-
-        return characterNames;
     }
 
     private List<Integer> getNumberOfPages() throws IOException {
