@@ -22,7 +22,8 @@ app:
     maxLevel: 600
     minLevel: 210
     maxTibiaCoins: 1000
+    mailTo: tibiabazaaranalyzer@gmail.com
 
   scheduler:
     tibiabazaar:
-      cronExpresion: 0 0/20 * * * ?
+      cronExpresion: 0 0/30 * * * ?

@@ -50,6 +50,9 @@ public class MailServiceImpl implements MailService {
     @Value("${spring.mail.email}")
     private String emailFrom;
 
+    @Value("${app.mail.mailTo}")
+    private String mailTo;
+
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -76,7 +79,7 @@ public class MailServiceImpl implements MailService {
             final MimeMessage message = this.javaMailSender.createMimeMessage();
             final MimeMessageHelper helper = new MimeMessageHelper(message, true);
             message.setFrom(this.emailFrom);
-            helper.setTo("luesve94@gmail.com");
+            helper.setTo(this.mailTo);
             message.setSubject("Tibia Bazaar info at: " + subjectDate);
 
             final StringBuilder sb = new StringBuilder();
